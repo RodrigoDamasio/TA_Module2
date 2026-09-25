@@ -1,3 +1,5 @@
-# Lab Module 2
+# Lab Module 2 — Code Analyzer Agent
 
-Lab instructions and code for Module 2 go here.
+| Document | What it covers |
+|---|---|
+| [Lab2_Code_Analyzer.md](Lab2_Code_Analyzer.md) | The lab assignment and deliverables |
