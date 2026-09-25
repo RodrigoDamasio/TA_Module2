@@ -71,7 +71,7 @@ sequenceDiagram
         A->>A: estimate tokens, split into chunks if over budget
         loop each chunk (max 4)
             A->>G: investigate: system prompt + numbered code + tool definitions
-            opt tool call (max 3 rounds; 1 per chunk when chunked)
+            opt tool call (max 3 rounds, 1 per chunk when chunked)
                 G-->>A: call get_metrics / read_lines / find_text
                 A->>T: run tool locally
                 T-->>A: result (trimmed to size)
