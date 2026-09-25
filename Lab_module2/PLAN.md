@@ -72,7 +72,7 @@ sequenceDiagram
         loop each chunk (max 4)
             A->>G: investigate: system prompt + numbered code + tool definitions
             opt tool call (max 3 rounds, 1 per chunk when chunked)
-                G-->>A: call get_metrics / read_lines / find_text
+                G-->>A: call get_code_metrics / read_lines / find_text
                 A->>T: run tool locally
                 T-->>A: result (trimmed to size)
                 A->>G: tool result
@@ -351,6 +351,7 @@ Analyze only the lines in this part; the outline is for context.
 | 429 | `rate-limited` + `Retry-After` | This client sent too many analyses |
 | 502 | `llm-bad-response` | Model output still invalid after one repair retry |
 | 503 | `llm-quota-exhausted` + `Retry-After` | Gemini quota reached (per-minute or per-day) |
+| 503 | `llm-unavailable` + `Retry-After` | Gemini outage (5xx) or too many requests queued |
 | 504 | `llm-timeout` | Gemini did not answer in time |
 | 500 | `internal-error` | Anything unexpected (logged, CORS headers kept) |
 
@@ -361,7 +362,7 @@ Analyze only the lines in this part; the outline is for context.
 | **Per-request budget** (≈ 16K tokens) | Split into: system prompt + tool definitions (fixed) · numbered code · tool traffic · reserved output |
 | **Local token estimate** | Before each call, conservative chars-per-token estimate (≈ 3 chars/token for code, measured in Module 1). Actual usage from Gemini's response is recorded in `meta.tokens` and compared in tests/evaluation |
 | **Numbered lines** | Code is sent as `12│ ...` so the model reports accurate line numbers (counted in the budget) |
-| **Chunking (map → reduce)** | Code over budget is split at function/class boundaries (Python AST; blank-line/brace heuristics otherwise), each chunk with a header of imports + file outline; results merged with line-number offsets and de-duplication. Max 4 chunks |
+| **Chunking (map → reduce)** | Code over budget is split at function/class boundaries (from `lizard`, for all supported languages; blank lines inside an oversized function), each chunk with a header of imports + file outline; results merged with line-number offsets and de-duplication. Max 4 chunks |
 | **Hard limit** | Beyond max chunks → `413 code-too-large` instead of a partial analysis |
 | **Agent-loop growth** | Tool results trimmed; max 3 tool rounds (1 per chunk when chunked); when the remaining budget is low, skip straight to the *report* phase |
 | **Output fits** | Schema caps (≤ 20 issues, length limits); on `MAX_TOKENS`, one retry asking for a shorter answer, otherwise return with `meta.truncated = true` |
