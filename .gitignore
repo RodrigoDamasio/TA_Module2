@@ -1,0 +1,14 @@
+# Only Lab_module2 is published. Everything else in the Module 2 folder
+# (course scripts, examples, notes) stays local.
+/*
+!/.gitignore
+!/README.md
+!/Lab_module2/
+
+# Safety net for anything generated inside Lab_module2
+__pycache__/
+.venv/
+node_modules/
+.env
+.env.local
+*.db
