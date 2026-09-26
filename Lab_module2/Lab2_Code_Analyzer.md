@@ -77,12 +77,14 @@ An API service that:
 
 ## Deliverables
 
-- [ ] Working code analyzer API (Python OR TypeScript)
-- [ ] Custom system prompt for analysis
-- [ ] Structured JSON output
-- [ ] At least 2 analysis types (general + security OR performance)
-- [ ] Deployed to Railway/Vercel
-- [ ] Tested with sample code
+**Live API:** https://backend-production-17bc.up.railway.app/docs · evaluation: [backend/eval/report_full.md](backend/eval/report_full.md)
+
+- [x] Working code analyzer API (Python OR TypeScript)
+- [x] Custom system prompt for analysis
+- [x] Structured JSON output
+- [x] At least 2 analysis types (general + security OR performance)
+- [x] Deployed to Railway/Vercel
+- [x] Tested with sample code
 - [ ] Web frontend with code input and analysis results display
 - [ ] Application deployed to Vercel/Railway/Render (provide URL)
 

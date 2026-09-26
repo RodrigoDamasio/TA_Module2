@@ -1,5 +1,7 @@
 # Code Analyzer — Backend
 
+**Live:** https://backend-production-17bc.up.railway.app ([API docs](https://backend-production-17bc.up.railway.app/docs)) · deployment steps: [DEPLOY.md](DEPLOY.md)
+
 FastAPI service with an LLM agent (Google Gemini) that reviews code and returns structured JSON: summary, issues, suggestions, metrics. Design: [../PLAN.md](../PLAN.md) · [../BACKEND_PLAN.md](../BACKEND_PLAN.md).
 
 ## Run locally
