@@ -2,6 +2,8 @@
 
 import json
 import threading
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 from fakes import GOOD_REPORT, FakeLLM, report
@@ -31,6 +33,7 @@ from app.infrastructure.demo_llm import DemoLLMClient
 from app.infrastructure.gemini_client import (
     build_config,
     quota_error,
+    seconds_until_daily_reset,
     thinking_config,
     to_contents,
     to_response,
@@ -275,18 +278,28 @@ def _quota_body(quota_id, delay="17s"):
     }
 
 
+NOON_PT = datetime(2026, 9, 25, 12, 0, tzinfo=ZoneInfo("America/Los_Angeles"))
+
+
 @pytest.mark.parametrize(
     "body, scope, retry",
     [
         (_quota_body("GenerateRequestsPerMinutePerProjectPerModel-FreeTier"), "minute", 17),
-        (_quota_body("GenerateRequestsPerDayPerProjectPerModel-FreeTier", "0s"), "day", 0),
-        (_quota_body("SomethingNew", "5s"), "day", 5),  # unknown → safe choice
-        ({"error": {"code": 429, "message": "quota"}}, "day", 0),
+        # real body seen from gemini-3.8-flash: daily limit with a misleading 12s retryDelay
+        (_quota_body("GenerateRequestsPerDayPerProjectPerModel-FreeTier", "12s"), "day", 43200),
+        (_quota_body("SomethingNew", "5s"), "day", 43200),  # unknown → safe choice
+        ({"error": {"code": 429, "message": "quota"}}, "day", 43200),
     ],
 )
 def test_quota_errors_are_parsed(body, scope, retry):
-    err = quota_error(errors.ClientError(429, body))
+    err = quota_error(errors.ClientError(429, body), now=NOON_PT)
     assert (err.scope, err.retry_after_s) == (scope, retry)
+
+
+def test_daily_reset_is_midnight_pacific():
+    assert seconds_until_daily_reset(NOON_PT) == 12 * 3600
+    late = NOON_PT.replace(hour=23, minute=59)
+    assert seconds_until_daily_reset(late) == 60
 
 
 def test_demo_client_needs_no_key():

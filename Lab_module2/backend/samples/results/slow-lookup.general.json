@@ -1,0 +1,45 @@
+{
+  "summary": "The code provides two utility functions for filtering customer lists: one to find customers who have placed orders, and another to extract unique email addresses. Overall the code is clean and readable, though it uses O(N*M) and O(K^2) approaches respectively which could impact performance on larger datasets.",
+  "issues": [
+    {
+      "severity": "medium",
+      "line": 7,
+      "category": "performance",
+      "description": "Nested loops result in O(N * M) time complexity, which can be inefficient for large lists of customers and orders.",
+      "suggestion": "Build a set of order customer IDs beforehand for O(N + M) lookup: order_customer_ids = {order[\"customer_id\"] for order in orders} and return [c for c in customers if c[\"id\"] in order_customer_ids]"
+    },
+    {
+      "severity": "low",
+      "line": 17,
+      "category": "performance",
+      "description": "Checking membership in a list takes O(K) time per iteration, leading to O(K^2) overall complexity.",
+      "suggestion": "Use a set to track seen emails: seen = set(); return [c[\"email\"] for c in customers if c[\"email\"] not in seen and not seen.add(c[\"email\"])]"
+    }
+  ],
+  "suggestions": [
+    "Consider adding type hints for return structures if more detailed models are used.",
+    "Add unit tests covering edge cases such as empty lists or missing keys."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "good",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "general",
+    "language": "python",
+    "model": "gemini-3.5-flash-lite",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 1,
+    "tool_rounds": 1,
+    "llm_calls": 3,
+    "tokens": {
+      "input": 4462,
+      "output": 691,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}

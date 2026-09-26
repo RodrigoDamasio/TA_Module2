@@ -80,7 +80,7 @@ All settings from environment variables with safe local defaults (`app/config.py
 | Variable | Default | Purpose |
 |---|---|---|
 | `GOOGLE_API_KEY` | — (required for real calls) | Gemini key. Never logged, never returned |
-| `GEMINI_MODEL` | `gemini-3.8-flash` | Pinned model (part of the cache key) |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | Pinned model (part of the cache key) |
 | `LLM_MODE` | `gemini` | `gemini` · `replay` (tests) · `fake` (local UI work without quota) |
 | `LLM_MIN_INTERVAL_S` | `6` | Pacing between Gemini calls (set from the AI Studio limits) |
 | `LLM_TIMEOUT_S` | `60` | Per-call timeout |
@@ -511,7 +511,7 @@ railway domain --json
 railway variables --set "BASE_URL=https://<railway-domain>" --skip-deploys
 
 # 3. Model + limits (non-secret)
-railway variables --set "GEMINI_MODEL=gemini-3.8-flash" --set "LLM_MIN_INTERVAL_S=6" \
+railway variables --set "GEMINI_MODEL=gemini-3.5-flash-lite" --set "LLM_MIN_INTERVAL_S=6" \
                   --set "RATE_LIMIT_PER_MINUTE=5" --set "RATE_LIMIT_PER_DAY=50" --skip-deploys
 
 # 4. API key — piped from the local .env: never on the command line, in shell history, or in output

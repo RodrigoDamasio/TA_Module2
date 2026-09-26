@@ -1,0 +1,39 @@
+{
+  "summary": "The code defines a single function to export reports by executing a shell command using string concatenation with an untrusted filename input. This introduces a critical command injection vulnerability.",
+  "issues": [
+    {
+      "severity": "critical",
+      "line": 10,
+      "category": "security",
+      "description": "Command injection vulnerability: `filename` is concatenated directly into a shell command string passed to `subprocess.check_output` with `shell=True`. An attacker can supply arbitrary shell commands via the `filename` parameter.",
+      "suggestion": "Avoid `shell=True` and string concatenation. Read the file safely using Python built-ins:\n```python\nwith open(os.path.join(\"reports\", filename), \"r\") as f:\n    return f.read()\n```"
+    }
+  ],
+  "suggestions": [
+    "Never use `shell=True` when processing untrusted input.",
+    "Use built-in file operations instead of invoking external shell commands like `cat`.",
+    "Validate and sanitize all external inputs, especially those used in file paths or system commands."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "fair",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "security",
+    "language": "python",
+    "model": "gemini-3.5-flash-lite",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 1,
+    "tool_rounds": 1,
+    "llm_calls": 3,
+    "tokens": {
+      "input": 4166,
+      "output": 473,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "summary": "This module provides basic database helper functions for looking up users and counting total users in SQLite. While the functions are concise and readable, there is a critical SQL injection vulnerability in the user lookup logic.",
+  "issues": [
+    {
+      "severity": "critical",
+      "line": 7,
+      "category": "security",
+      "description": "SQL query built with an f-string using untrusted parameter 'username'. This exposes the database to SQL injection attacks.",
+      "suggestion": "Use parameterized queries instead of string formatting: return conn.execute('SELECT id, email FROM users WHERE username = ?', (username,)).fetchone()"
+    }
+  ],
+  "suggestions": [
+    "Always use parameterized queries or an ORM to avoid SQL injection vulnerabilities.",
+    "Add type hints for return types (e.g., Optional[sqlite3.Row] or Optional[tuple]) to improve code clarity and static analysis."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "good",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "general",
+    "language": "python",
+    "model": "gemini-3.8-flash",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 1,
+    "tool_rounds": 2,
+    "llm_calls": 4,
+    "tokens": {
+      "input": 5563,
+      "output": 439,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}

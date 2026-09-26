@@ -1,0 +1,38 @@
+{
+  "summary": "The code provides database query utility functions for an admin dashboard, specifically for finding a user by username and counting total users. However, it contains a critical SQL injection vulnerability due to unparameterized string formatting.",
+  "issues": [
+    {
+      "severity": "critical",
+      "line": 7,
+      "category": "security",
+      "description": "SQL query built using an f-string with the caller-supplied `username`, allowing attackers to inject arbitrary SQL statements.",
+      "suggestion": "Use a parameterized query instead of string formatting: conn.execute('SELECT id, email FROM users WHERE username = ?', (username,))"
+    }
+  ],
+  "suggestions": [
+    "Always use parameterized queries or an ORM to interact with databases safely.",
+    "Add type hints and documentation for return types where appropriate."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "good",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "security",
+    "language": "python",
+    "model": "gemini-3.5-flash-lite",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 1,
+    "tool_rounds": 1,
+    "llm_calls": 3,
+    "tokens": {
+      "input": 4157,
+      "output": 300,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}

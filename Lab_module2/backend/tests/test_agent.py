@@ -182,7 +182,7 @@ def test_meta_is_populated():
         1,
         3,
     )
-    assert m.tokens.input == 300 and m.model == "gemini-3.8-flash" and m.prompt_version == "1"
+    assert m.tokens.input == 300 and m.model == "gemini-3.5-flash-lite" and m.prompt_version == "1"
 
 
 # X5 via the use case

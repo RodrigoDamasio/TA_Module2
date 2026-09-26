@@ -15,7 +15,7 @@ Behind it, an **agent** calls an LLM (Google Gemini), lets the model use **tools
 | Backend | Python 3.12 · FastAPI · Pydantic | Proven in Lab 1 (layers, RFC 9457, tests, Railway deploy) |
 | Frontend | Next.js 16 · TypeScript · Tailwind | Proven in Lab 1; native on Vercel |
 | LLM provider | **Google Gemini** via the official `google-genai` SDK | The only working key (`GOOGLE_API_KEY`, free tier). Other providers plug in behind the same abstraction later |
-| Model | Configurable (`GEMINI_MODEL`); **pinned** version, not a `-latest` alias | Reproducible evaluations and cache keys. **`gemini-3.8-flash`** (default) and **`gemini-3.5-flash-lite`** (cheaper, for prompt iteration). The 2.5 models are listed by the API but return *“no longer available to new users”* — found in Phase 0 |
+| Model | Configurable (`GEMINI_MODEL`); **pinned** version, not a `-latest` alias | Reproducible evaluations and cache keys. **`gemini-3.5-flash-lite`** (default). Found in Phase 0 / evaluation: the 2.5 models are listed but *“no longer available to new users”*, and `gemini-3.8-flash`'s free tier allows only **20 requests/day** (≈ 6 analyses) — too little for a public app. `gemini-3.8-flash` stays selectable via `GEMINI_MODEL` |
 | Analysis types | `general`, `security`, `performance` | Lab requires ≥ 2 (general + security **or** performance) — we do all three, one system prompt each |
 | Agent pattern | **Two phases:** *investigate* (tool calls) → *report* (structured JSON, no tools) | Keeps tool use and schema-constrained output in separate requests, so it works regardless of whether a model supports both in one call; also the natural place to stop the loop when the context budget runs low |
 | Context budget | Self-imposed per-request token budget (≈ 16K, configurable) | Free-tier tokens-per-minute limits, latency, and answer quality — see §7 |
@@ -328,7 +328,7 @@ Analyze only the lines in this part; the outline is for context.
   "suggestions": ["Add type hints to public functions."],
   "metrics": { "complexity": "medium", "readability": "good", "test_coverage_estimate": "none" },
   "meta": {
-    "analysis_type": "security", "model": "gemini-3.8-flash", "prompt_version": "1",
+    "analysis_type": "security", "model": "gemini-3.5-flash-lite", "prompt_version": "1",
     "cached": false, "chunks": 1, "tool_rounds": 1, "llm_calls": 2,
     "tokens": { "input": 1830, "output": 412 }, "truncated": false
   }

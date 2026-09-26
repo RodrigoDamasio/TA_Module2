@@ -1,0 +1,41 @@
+{
+  "summary": "The code defines multiple statistical calculation functions for a reporting service, handling input validation and filtering out None values appropriately. Overall, the code is of good quality and performs safe mathematical operations using the built-in statistics module. (Large file analyzed in 3 parts.)",
+  "issues": [
+    {
+      "severity": "critical",
+      "line": 345,
+      "category": "security",
+      "description": "Using pickle.loads on untrusted client data allows arbitrary code execution.",
+      "suggestion": "Use a safe serialization format such as json instead of pickle for untrusted input."
+    }
+  ],
+  "suggestions": [
+    "Remove unused imports such as pickle if they are not needed in this module.",
+    "Consider refactoring the repeated statistical calculation logic into a shared helper function to reduce code duplication.",
+    "Consider factoring out the repeated mean and dispersion calculation into a helper function to adhere to the DRY principle.",
+    "Avoid using pickle for deserializing data from untrusted sources.",
+    "Refactor duplicated computation logic into a shared helper function."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "good",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "security",
+    "language": "python",
+    "model": "gemini-3.5-flash-lite",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 3,
+    "tool_rounds": 1,
+    "llm_calls": 6,
+    "tokens": {
+      "input": 20630,
+      "output": 640,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}

@@ -1,8 +1,11 @@
 """Gemini adapter: maps the provider-neutral LLMClient port onto the google-genai SDK."""
 
+import logging
 import re
 from collections.abc import Callable
+from datetime import datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import httpx
 from google import genai
@@ -27,6 +30,9 @@ from app.domain.ports import (
     ToolResultsMessage,
     UserMessage,
 )
+
+logger = logging.getLogger(__name__)
+_PACIFIC = ZoneInfo("America/Los_Angeles")
 
 _FINISH: dict[Any, FinishReason] = {
     types.FinishReason.STOP: "stop",
@@ -136,7 +142,14 @@ def to_response(r: types.GenerateContentResponse) -> LLMResponse:
     )
 
 
-def quota_error(err: errors.APIError) -> LLMQuotaExceeded:
+def seconds_until_daily_reset(now: datetime | None = None) -> float:
+    """Gemini's daily quotas reset at midnight Pacific time."""
+    now = now or datetime.now(_PACIFIC)
+    tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return (tomorrow - now).total_seconds()
+
+
+def quota_error(err: errors.APIError, now: datetime | None = None) -> LLMQuotaExceeded:
     """Parse Gemini's 429 body: RetryInfo.retryDelay + QuotaFailure ids (minute vs day).
     Anything unrecognized is treated as the daily quota — the safe choice is to stop."""
     body = err.details if isinstance(err.details, dict) else {}
@@ -153,7 +166,18 @@ def quota_error(err: errors.APIError) -> LLMQuotaExceeded:
                 for v in d.get("violations", [])
             )
     per_minute = "PerMinute" in quota_ids and "PerDay" not in quota_ids
-    return LLMQuotaExceeded("minute" if per_minute else "day", retry_after)
+    scope = "minute" if per_minute else "day"
+    if scope == "day":
+        # The retryDelay sent with a daily-quota 429 is only seconds long; retrying then just
+        # hits the limit again. Wait for the real reset instead.
+        retry_after = seconds_until_daily_reset(now)
+    logger.warning(
+        "Gemini 429: scope=%s retry_after=%.0fs quota=%s",
+        scope,
+        retry_after,
+        quota_ids.strip() or "(none reported)",
+    )
+    return LLMQuotaExceeded(scope, retry_after)
 
 
 class GeminiClient:

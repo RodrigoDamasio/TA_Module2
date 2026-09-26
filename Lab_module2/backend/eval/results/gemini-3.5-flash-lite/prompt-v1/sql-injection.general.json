@@ -1,0 +1,38 @@
+{
+  "summary": "The code provides two utility functions to query user information from a SQLite database. While simple and concise, it contains a critical security vulnerability due to string interpolation in SQL queries.",
+  "issues": [
+    {
+      "severity": "high",
+      "line": 7,
+      "category": "security",
+      "description": "SQL query built from an f-string with the caller-supplied `username`; an attacker can inject SQL.",
+      "suggestion": "Use a parameterized query: conn.execute('SELECT id, email FROM users WHERE username = ?', (username,))"
+    }
+  ],
+  "suggestions": [
+    "Add type hints for return values on all functions.",
+    "Add docstrings describing function behavior and parameters."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "good",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "general",
+    "language": "python",
+    "model": "gemini-3.5-flash-lite",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 1,
+    "tool_rounds": 1,
+    "llm_calls": 3,
+    "tokens": {
+      "input": 4060,
+      "output": 319,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "summary": "This module provides administrative helper functions to query SQLite user records, specifically looking up a user by username and retrieving the total user count. While concise, the user lookup logic suffers from a critical SQL injection vulnerability caused by dynamic string formatting.",
+  "issues": [
+    {
+      "severity": "critical",
+      "line": 7,
+      "category": "security",
+      "description": "SQL query built via f-string string formatting with caller-provided `username`. An attacker can manipulate this parameter to execute arbitrary SQL commands or bypass authentication checks.",
+      "suggestion": "Use parameterized queries instead of string interpolation: `return conn.execute(\"SELECT id, email FROM users WHERE username = ?\", (username,)).fetchone()`"
+    }
+  ],
+  "suggestions": [
+    "Enforce parameterized queries consistently across all database operations to prevent injection risks.",
+    "Add type hints for return values across all functions, e.g., returning `tuple[Any, ...] | None` in `find_user`."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "good",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "security",
+    "language": "python",
+    "model": "gemini-3.8-flash",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 1,
+    "tool_rounds": 1,
+    "llm_calls": 3,
+    "tokens": {
+      "input": 4071,
+      "output": 320,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "summary": "The code provides utility functions to find customers with orders and to extract unique emails from a list of customers. It suffers from nested loops and list membership tests that lead to suboptimal O(n*m) and O(n^2) time complexities.",
+  "issues": [
+    {
+      "severity": "medium",
+      "line": 7,
+      "category": "performance",
+      "description": "Nested loop over customers and orders leads to O(n*m) time complexity.",
+      "suggestion": "Extract order customer IDs into a set first: `order_customer_ids = {o[\"customer_id\"] for o in orders}` and check membership in O(1)."
+    },
+    {
+      "severity": "medium",
+      "line": 17,
+      "category": "performance",
+      "description": "Membership testing on a list inside a loop results in O(n^2) time complexity.",
+      "suggestion": "Use a set or a dict to track seen emails: `return list(dict.fromkeys(c[\"email\"] for c in customers))`."
+    }
+  ],
+  "suggestions": [
+    "Use sets for O(1) membership lookups instead of lists when filtering or deduplicating data.",
+    "Leverage built-in comprehensions or generator expressions combined with sets to improve execution time."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "good",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "performance",
+    "language": "python",
+    "model": "gemini-3.5-flash-lite",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 1,
+    "tool_rounds": 1,
+    "llm_calls": 3,
+    "tokens": {
+      "input": 4336,
+      "output": 477,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}

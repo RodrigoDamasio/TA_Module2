@@ -1,0 +1,53 @@
+{
+  "summary": "The code provides simple helper functions to fetch a user profile via an API and format the user's name and age. Overall quality is low due to heavy reliance on 'any' types, lack of error handling on network requests, and unsafe type assertions.",
+  "issues": [
+    {
+      "severity": "medium",
+      "line": 3,
+      "category": "bug",
+      "description": "The fetch call does not check if `response.ok` is true, meaning non-200 responses will still be parsed as JSON instead of throwing an error.",
+      "suggestion": "Check response.ok and throw an error if the request failed: if (!response.ok) throw new Error('Failed to load profile');"
+    },
+    {
+      "severity": "medium",
+      "line": 13,
+      "category": "bug",
+      "description": "Using an unchecked type assertion `(user.age as number)` on an untyped input will cause a runtime TypeError if `age` is null, undefined, or not a number when `.toFixed()` is called.",
+      "suggestion": "Validate or safely parse the age before calling toFixed: const age = typeof user.age === 'number' ? user.age : 0; return age.toFixed(0) + ' years';"
+    },
+    {
+      "severity": "low",
+      "line": 2,
+      "category": "maintainability",
+      "description": "Using 'any' for parameters and return types bypasses TypeScript type checking and reduces maintainability.",
+      "suggestion": "Define an explicit User interface and use it for parameter and return types: interface User { id: number; firstName: string; lastName: string; age: number; }"
+    }
+  ],
+  "suggestions": [
+    "Define explicit TypeScript interfaces or types instead of using 'any'.",
+    "Add proper error handling around async operations and network calls.",
+    "Add null/undefined checks for object properties before accessing nested values or calling methods."
+  ],
+  "metrics": {
+    "complexity": "low",
+    "readability": "fair",
+    "test_coverage_estimate": "none"
+  },
+  "meta": {
+    "analysis_type": "general",
+    "language": "typescript",
+    "model": "gemini-3.5-flash-lite",
+    "prompt_version": "1",
+    "cached": false,
+    "chunks": 1,
+    "tool_rounds": 1,
+    "llm_calls": 3,
+    "tokens": {
+      "input": 4115,
+      "output": 612,
+      "thinking": 0
+    },
+    "truncated": false,
+    "dropped_issues": 0
+  }
+}
