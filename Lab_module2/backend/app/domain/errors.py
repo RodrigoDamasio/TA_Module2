@@ -30,6 +30,10 @@ class LLMUnavailable(LLMError):
         self.retry_after_s = retry_after_s
 
 
+class LLMOverloaded(LLMUnavailable):
+    """The provider is temporarily overloaded (HTTP 5xx) — worth a short retry."""
+
+
 class LLMTimeout(LLMError):
     pass
 

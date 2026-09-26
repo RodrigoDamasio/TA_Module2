@@ -9,7 +9,7 @@ import threading
 import time
 from collections.abc import Callable
 
-from app.domain.errors import LLMQuotaExceeded, LLMUnavailable
+from app.domain.errors import LLMOverloaded, LLMQuotaExceeded, LLMUnavailable
 from app.domain.ports import LLMClient, LLMRequest, LLMResponse
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,10 @@ class PacedLLMClient:
 
 
 class RetryingLLMClient:
-    """Retries short per-minute quota errors; never retries the daily quota."""
+    """Retries short per-minute quota errors and brief provider overloads (5xx);
+    never retries the daily quota."""
+
+    OVERLOAD_BACKOFF_S = 5.0
 
     def __init__(
         self,
@@ -66,6 +69,12 @@ class RetryingLLMClient:
                     raise
                 logger.warning("Per-minute quota hit; retrying in %.0fs", err.retry_after_s)
                 self._sleep(err.retry_after_s + 0.5)
+            except LLMOverloaded:
+                if attempt == self._max_retries:
+                    raise
+                wait = self.OVERLOAD_BACKOFF_S * (attempt + 1)
+                logger.warning("LLM provider overloaded; retrying in %.0fs", wait)
+                self._sleep(wait)
         raise AssertionError("unreachable")  # pragma: no cover
 
 

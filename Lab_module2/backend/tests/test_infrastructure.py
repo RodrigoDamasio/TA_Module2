@@ -7,7 +7,12 @@ import pytest
 from fakes import GOOD_REPORT, FakeLLM, report
 from google.genai import errors, types
 
-from app.domain.errors import LLMQuotaExceeded, LLMRequestRejected, LLMUnavailable
+from app.domain.errors import (
+    LLMOverloaded,
+    LLMQuotaExceeded,
+    LLMRequestRejected,
+    LLMUnavailable,
+)
 from app.domain.models import (
     AnalysisMeta,
     AnalysisReport,
@@ -82,6 +87,20 @@ def test_retry_only_short_minute_quota_errors():
     with pytest.raises(LLMQuotaExceeded):
         RetryingLLMClient(inner, max_retries=2, sleep=clock.sleep).generate(REQ)
     assert len(inner.requests) == 3
+
+
+def test_retry_brief_provider_overloads_with_backoff():
+    clock = FakeClock()
+    inner = FakeLLM([LLMOverloaded("503"), report()])
+    assert RetryingLLMClient(inner, sleep=clock.sleep).generate(REQ).finish_reason == "stop"
+    assert clock.slept == [5.0]
+    inner = FakeLLM([LLMOverloaded("503")] * 3)
+    with pytest.raises(LLMOverloaded):
+        RetryingLLMClient(inner, sleep=clock.sleep).generate(REQ)
+    assert len(inner.requests) == 3
+    busy = FakeLLM([LLMUnavailable("queue full"), report()])  # our own "busy" is not retried
+    with pytest.raises(LLMUnavailable):
+        RetryingLLMClient(busy, sleep=clock.sleep).generate(REQ)
 
 
 # Q3
@@ -172,6 +191,7 @@ def test_request_mapping_investigate_and_report():
 def test_thinking_config_per_model_family():
     assert thinking_config("gemini-2.5-pro", 0).thinking_budget == 128
     assert thinking_config("gemini-3.5-flash", 0).thinking_level == types.ThinkingLevel.LOW
+    assert thinking_config("gemini-3.8-flash", 1024).thinking_level == types.ThinkingLevel.LOW
     assert thinking_config("gemini-3.5-flash", 4096).thinking_level == types.ThinkingLevel.HIGH
     assert thinking_config("gemini-2.5-flash", None) is None
 
@@ -274,3 +294,40 @@ def test_demo_client_needs_no_key():
     assert demo.generate(REQ).tool_calls == []
     parsed = demo.generate(LLMRequest("s", [], response_schema=LLMReport)).parsed
     assert AnalysisReport.model_validate(parsed).issues[0].severity == "info"
+
+
+# ---- replay of real Gemini responses recorded by eval/record_cassettes.py ------
+
+CASSETTES = sorted((__import__("pathlib").Path(__file__).parent / "cassettes").glob("*.json"))
+
+
+def _cassette(n: int) -> types.GenerateContentResponse:
+    return types.GenerateContentResponse.model_validate(json.loads(CASSETTES[n].read_text()))
+
+
+def test_real_tool_call_response_maps():
+    r = to_response(_cassette(0))
+    assert [c.name for c in r.tool_calls] == ["get_code_metrics"]
+    assert r.usage.input > 0 and r.raw_turn.role == "model"
+
+
+def test_real_investigation_text_maps():
+    r = to_response(_cassette(1))
+    assert r.tool_calls == [] and "Line 7" in r.text and r.finish_reason == "stop"
+
+
+def test_real_report_validates_against_the_strict_schema():
+    r = to_response(_cassette(2))
+    report = AnalysisReport.model_validate(json.loads(r.text))
+    assert any(i.line == 7 and i.category == "security" for i in report.issues)
+
+
+def test_unusable_parsed_model_falls_back_to_text():
+    class Unusable(__import__("pydantic").BaseModel):
+        def model_dump(self, *args, **kwargs):
+            raise RuntimeError("cannot serialize")
+
+    raw = _cassette(2)
+    raw.parsed = Unusable()
+    r = to_response(raw)
+    assert r.parsed is None and json.loads(r.text)["issues"]

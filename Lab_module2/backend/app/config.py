@@ -34,7 +34,7 @@ class Settings:
 def get_settings() -> Settings:
     return Settings(
         google_api_key=os.getenv("GOOGLE_API_KEY") or None,
-        gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+        gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
         llm_mode=os.getenv("LLM_MODE", "gemini"),
         llm_min_interval_s=_float("LLM_MIN_INTERVAL_S", 6.0),
         llm_timeout_s=_int("LLM_TIMEOUT_S", 60),

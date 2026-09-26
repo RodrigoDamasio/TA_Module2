@@ -164,7 +164,7 @@ def test_cors_preflight(client):
 # A6
 def test_health_does_not_call_the_llm(client, llm):
     r = client.get("/health")
-    assert r.json() == {"status": "ok", "model": "gemini-2.5-flash", "llm_mode": "gemini"}
+    assert r.json() == {"status": "ok", "model": "gemini-3.8-flash", "llm_mode": "gemini"}
     assert llm.requests == []
 
 

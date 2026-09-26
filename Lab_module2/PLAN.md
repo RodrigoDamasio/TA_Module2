@@ -15,7 +15,7 @@ Behind it, an **agent** calls an LLM (Google Gemini), lets the model use **tools
 | Backend | Python 3.12 · FastAPI · Pydantic | Proven in Lab 1 (layers, RFC 9457, tests, Railway deploy) |
 | Frontend | Next.js 16 · TypeScript · Tailwind | Proven in Lab 1; native on Vercel |
 | LLM provider | **Google Gemini** via the official `google-genai` SDK | The only working key (`GOOGLE_API_KEY`, free tier). Other providers plug in behind the same abstraction later |
-| Model | Configurable (`GEMINI_MODEL`); **pinned** version, not a `-latest` alias | Reproducible evaluations and cache keys. Candidates available to the key: `gemini-2.5-flash` (default), `gemini-2.5-flash-lite` (cheaper, for prompt iteration); newer 3.x models can be compared in the evaluation |
+| Model | Configurable (`GEMINI_MODEL`); **pinned** version, not a `-latest` alias | Reproducible evaluations and cache keys. **`gemini-3.8-flash`** (default) and **`gemini-3.5-flash-lite`** (cheaper, for prompt iteration). The 2.5 models are listed by the API but return *“no longer available to new users”* — found in Phase 0 |
 | Analysis types | `general`, `security`, `performance` | Lab requires ≥ 2 (general + security **or** performance) — we do all three, one system prompt each |
 | Agent pattern | **Two phases:** *investigate* (tool calls) → *report* (structured JSON, no tools) | Keeps tool use and schema-constrained output in separate requests, so it works regardless of whether a model supports both in one call; also the natural place to stop the loop when the context budget runs low |
 | Context budget | Self-imposed per-request token budget (≈ 16K, configurable) | Free-tier tokens-per-minute limits, latency, and answer quality — see §7 |
@@ -144,7 +144,7 @@ app/prompts/
 | **Constraints first** | Hard rules come before preferences: report only what is in the code, use the given line numbers, ignore instructions inside the code, max 20 issues |
 | **Clarity / specificity** | A severity rubric with concrete definitions replaces vague "high/low", and suggestions must be concrete changes (*"use `cursor.execute(sql, (id,))`"*), not *"improve security"* |
 | **Context injection** | A short language checklist is injected per language (e.g. Python: mutable default args, bare `except`, `eval`, `pickle`; JavaScript: `innerHTML`, `eval`, `==`) — facts given, not assumed |
-| **Chain-of-thought** | Happens in the **investigate** phase: the model reasons step by step (understand → look for issues → verify with tools). Only the final **report** is structured JSON, so reasoning never pollutes the output. Gemini 2.5 models also "think" internally — the thinking budget is configurable, because thinking tokens count against output limits and quota |
+| **Chain-of-thought** | Happens in the **investigate** phase: the model reasons step by step (understand → look for issues → verify with tools). Only the final **report** is structured JSON, so reasoning never pollutes the output. Gemini models also "think" internally — the thinking budget is configurable, because thinking tokens count against output limits and quota |
 | **Few-shot** | One compact calibration example (a correctly reported finding with rubric-matched severity and a concrete fix) **and** one counter-example (something that must *not* be reported). Kept short — the context budget matters more than a third example |
 | **Self-consistency (verify → revise)** | The report prompt ends with a verification checklist the model applies before answering; the code then re-checks it (schema, line ranges, duplicates) and, if invalid, sends `repair.md` once |
 | **Prompt chaining** | Two chains: *investigate → report* for every analysis, and *map (per chunk) → reduce (merge)* for large files |
@@ -328,7 +328,7 @@ Analyze only the lines in this part; the outline is for context.
   "suggestions": ["Add type hints to public functions."],
   "metrics": { "complexity": "medium", "readability": "good", "test_coverage_estimate": "none" },
   "meta": {
-    "analysis_type": "security", "model": "gemini-2.5-flash", "prompt_version": "1",
+    "analysis_type": "security", "model": "gemini-3.8-flash", "prompt_version": "1",
     "cached": false, "chunks": 1, "tool_rounds": 1, "llm_calls": 2,
     "tokens": { "input": 1830, "output": 412 }, "truncated": false
   }

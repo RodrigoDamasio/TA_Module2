@@ -1,6 +1,7 @@
 """Gemini adapter: maps the provider-neutral LLMClient port onto the google-genai SDK."""
 
 import re
+from collections.abc import Callable
 from typing import Any
 
 import httpx
@@ -9,6 +10,7 @@ from google.genai import errors, types
 from pydantic import BaseModel
 
 from app.domain.errors import (
+    LLMOverloaded,
     LLMQuotaExceeded,
     LLMRequestRejected,
     LLMTimeout,
@@ -46,6 +48,7 @@ def thinking_config(model: str, budget: int | None) -> types.ThinkingConfig | No
         if "pro" in model:
             budget = max(budget, 128)  # Pro models cannot turn thinking off
         return types.ThinkingConfig(thinking_budget=budget)
+    # LOW is the lowest level every 3.x flash model accepts (gemini-3.8-flash rejects MINIMAL).
     level = types.ThinkingLevel.LOW if budget <= 1024 else types.ThinkingLevel.HIGH
     return types.ThinkingConfig(thinking_level=level)
 
@@ -112,9 +115,12 @@ def to_response(r: types.GenerateContentResponse) -> LLMResponse:
     parts = (candidate.content.parts if candidate.content else None) or []
     text = "".join(p.text for p in parts if p.text and not p.thought) or None
     calls = [ToolCall(fc.id, fc.name or "", dict(fc.args or {})) for fc in (r.function_calls or [])]
-    parsed = r.parsed
+    parsed: Any = r.parsed
     if isinstance(parsed, BaseModel):
-        parsed = parsed.model_dump(mode="json")
+        try:
+            parsed = parsed.model_dump(mode="json")
+        except Exception:  # noqa: BLE001 — SDK can hand back a bare BaseModel; use the text
+            parsed = None
     usage = r.usage_metadata
     return LLMResponse(
         text=text,
@@ -151,8 +157,15 @@ def quota_error(err: errors.APIError) -> LLMQuotaExceeded:
 
 
 class GeminiClient:
-    def __init__(self, api_key: str, model: str, timeout_s: int) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        timeout_s: int,
+        on_raw: Callable[[types.GenerateContentResponse], None] | None = None,
+    ) -> None:
         self._model = model
+        self._on_raw = on_raw  # used to record test cassettes
         self._client = genai.Client(
             api_key=api_key,
             http_options=types.HttpOptions(
@@ -177,9 +190,11 @@ class GeminiClient:
                 err.code, f"The LLM provider rejected the request ({err.code})."
             ) from err
         except errors.ServerError as err:
-            raise LLMUnavailable(f"The LLM provider is unavailable ({err.code}).") from err
+            raise LLMOverloaded(f"The LLM provider is overloaded ({err.code}).") from err
         except httpx.TimeoutException as err:
             raise LLMTimeout("The LLM provider did not answer in time.") from err
         except httpx.TransportError as err:
             raise LLMUnavailable("Could not reach the LLM provider.") from err
+        if self._on_raw is not None:
+            self._on_raw(response)
         return to_response(response)
