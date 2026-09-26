@@ -1,0 +1,4 @@
+- SQL/shell/eval built from strings (injection); eval/exec; pickle/yaml.load on untrusted data
+- hard-coded secrets; subprocess with shell=True; weak hashing (md5/sha1 for passwords)
+- mutable default arguments; bare `except:` or swallowed exceptions; `is` vs `==`
+- files/connections not closed (missing `with`); membership tests on lists in loops

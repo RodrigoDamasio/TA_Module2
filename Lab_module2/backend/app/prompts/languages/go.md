@@ -1,0 +1,3 @@
+- ignored `err` return values; SQL built with fmt.Sprintf (injection); hard-coded secrets
+- goroutine leaks and data races on shared maps; missing `defer Close()`; nil dereferences
+- unbounded goroutines or channels; string concatenation in loops

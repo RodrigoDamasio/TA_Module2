@@ -1,0 +1,3 @@
+- SQL built with string concatenation (use PreparedStatement); unsafe deserialization
+- hard-coded secrets; resources not closed (use try-with-resources); swallowed exceptions
+- `==` on strings; null handling; string concatenation in loops; synchronization issues

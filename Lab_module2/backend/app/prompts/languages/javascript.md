@@ -1,0 +1,3 @@
+- innerHTML/document.write with user data (XSS); eval/new Function; SQL built from strings
+- hard-coded secrets; `==` instead of `===`; unhandled promise rejections; missing await
+- var hoisting bugs; mutation of shared objects; blocking synchronous I/O on a server

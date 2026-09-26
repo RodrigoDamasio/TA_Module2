@@ -1,0 +1,3 @@
+- `any` and unchecked type assertions (`as`) hiding bugs; non-null assertions (`!`)
+- innerHTML with user data (XSS); eval; SQL built from strings; hard-coded secrets
+- unhandled promise rejections; missing await; ignored errors in catch blocks
