@@ -75,7 +75,7 @@ railway variables --set "FRONTEND_ORIGIN=http://localhost:3000,https://<vercel-d
 | `BASE_URL` | `https://backend-production-17bc.up.railway.app` |
 | `LLM_MIN_INTERVAL_S` | `6` |
 | `RATE_LIMIT_PER_MINUTE` / `RATE_LIMIT_PER_DAY` | `5` / `50` per client IP |
-| `FRONTEND_ORIGIN` | default `http://localhost:3000` until the frontend is deployed |
+| `FRONTEND_ORIGIN` | `http://localhost:3000,https://taller-code-analyzer.vercel.app` |
 
 ## Post-deploy verification (results)
 
@@ -88,7 +88,7 @@ railway variables --set "FRONTEND_ORIGIN=http://localhost:3000,https://<vercel-d
 | V5 | Same request again | ✅ `cached: true` from the volume | 0 |
 | V6 | CORS preflight + error response | ✅ `access-control-allow-origin` on both; `Retry-After` exposed | 0 |
 | V7 | `railway logs` | ✅ 0 occurrences of the API key or submitted code; sizes/counters only | 0 |
-| V8 | Frontend E2E against production | pending — after the frontend deploy | ~2 |
+| V8 | Frontend E2E against production | ✅ 6/6 ([frontend/DEPLOY.md](../frontend/DEPLOY.md)) | 0 (cached) |
 
 ## Problems hit
 

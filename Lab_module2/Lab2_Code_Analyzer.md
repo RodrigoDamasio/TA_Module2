@@ -77,7 +77,7 @@ An API service that:
 
 ## Deliverables
 
-**Live API:** https://backend-production-17bc.up.railway.app/docs · evaluation: [backend/eval/report_full.md](backend/eval/report_full.md)
+**Live app:** https://taller-code-analyzer.vercel.app · **API:** https://backend-production-17bc.up.railway.app/docs · evaluation: [backend/eval/report_full.md](backend/eval/report_full.md)
 
 - [x] Working code analyzer API (Python OR TypeScript)
 - [x] Custom system prompt for analysis
@@ -85,8 +85,8 @@ An API service that:
 - [x] At least 2 analysis types (general + security OR performance)
 - [x] Deployed to Railway/Vercel
 - [x] Tested with sample code
-- [ ] Web frontend with code input and analysis results display
-- [ ] Application deployed to Vercel/Railway/Render (provide URL)
+- [x] Web frontend with code input and analysis results display
+- [x] Application deployed to Vercel/Railway/Render (provide URL)
 
 ## Extension Challenges
 
